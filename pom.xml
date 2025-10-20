@@ -25,7 +25,7 @@
 
         <!-- Configuración SonarCloud -->
         <sonar.projectKey>MariaAvilaConde_GUIA8_TESTEOS</sonar.projectKey>
-        <sonar.organization>MariaAvilaConde</sonar.organization>
+        <sonar.organization>mariaavilaconde</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 

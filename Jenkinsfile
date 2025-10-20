@@ -4,7 +4,7 @@ pipeline {
     environment {
         SONAR_TOKEN = credentials('SONAR_TOKEN')
         SONAR_PROJECT_KEY = 'MariaAvilaConde_GUIA8_TESTEOS'
-        SONAR_ORG = 'MariaAvilaConde'
+        SONAR_ORG = 'mariaavilaconde'
     }
 
     tools {
