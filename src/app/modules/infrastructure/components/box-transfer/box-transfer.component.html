@@ -1,0 +1,275 @@
+<div class="container mx-auto p-4 sm:p-6 lg:p-8 bg-gray-50 dark:bg-slate-950 min-h-screen">
+  
+  <style>
+    @media (max-width: 767px) {
+      .responsive-table thead {
+        display: none;
+      }
+      .responsive-table tbody, .responsive-table tr, .responsive-table td {
+        display: block;
+        width: 100%;
+      }
+      .responsive-table tr {
+        margin-bottom: 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        overflow: hidden;
+        background-color: #ffffff;
+      }
+      .responsive-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.85rem 1rem;
+        text-align: right;
+        border-bottom: 1px solid #f3f4f6;
+      }
+      .responsive-table td:last-child {
+        border-bottom: none;
+      }
+      .responsive-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        text-align: left;
+        margin-right: 1rem;
+        color: #4b5563;
+      }
+    }
+
+    /* Reglas de Angular para forzar el modo oscuro en la vista responsiva */
+    :host-context(.dark) .responsive-table tr {
+      border-color: #334155;
+      background-color: #1e293b;
+      box-shadow: none;
+    }
+    :host-context(.dark) .responsive-table td {
+      border-bottom-color: #334155;
+      background-color: #1e293b; /* slate-800 */
+    }
+    :host-context(.dark) .responsive-table td::before {
+      color: #94a3b8;
+    }
+  </style>
+  <div class="bg-white dark:bg-slate-800 p-5 rounded-lg shadow-md mb-6">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-slate-100">Transferencias de Cajas de Agua</h2>
+        <p class="text-gray-500 dark:text-slate-400 mt-1">Gestiona las transferencias entre usuarios y cajas de agua</p>
+      </div>
+      <div>
+        <button (click)="openModal(false)" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+          </svg>
+          <span>Nueva Transferencia</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="flex justify-center items-center h-64">
+    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-sky-500"></div>
+    <p class="ml-4 text-sky-700 dark:text-sky-300 text-lg">Cargando transferencias...</p>
+  </div>
+
+  <!-- Mensaje de error general -->
+  <div *ngIf="!loading && errorMessages.general" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm text-red-800 dark:text-red-200">{{ errorMessages.general }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje cuando no hay transferencias -->
+  <div *ngIf="!loading && !errorMessages.general && transfers.length === 0" class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-8 text-center">
+    <svg class="mx-auto h-12 w-12 text-blue-400 dark:text-blue-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2v0M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+    </svg>
+    <h3 class="text-lg font-medium text-blue-900 dark:text-blue-100">No hay transferencias registradas</h3>
+    <p class="text-blue-600 dark:text-blue-200 mt-2">Comience creando una nueva transferencia haciendo clic en el botón "Nueva Transferencia".</p>
+  </div>
+  
+  <div *ngIf="!loading && !errorMessages.general && transfers.length > 0" class="bg-transparent md:bg-white md:dark:bg-slate-800 md:shadow-lg md:rounded-lg md:overflow-hidden">
+    <table class="min-w-full leading-normal responsive-table">
+      <thead>
+        <tr class="bg-gray-100 dark:bg-slate-700 text-left text-gray-600 dark:text-slate-300 uppercase text-sm">
+          <th class="py-3 px-6">N°</th>
+          <th class="py-3 px-6">Antiguo Usuario</th>
+          <th class="py-3 px-6">Nuevo Usuario</th>
+          <th class="py-3 px-6">Motivo</th>
+          <th class="py-3 px-6">Documentos</th>
+          <th class="py-3 px-6">Fecha Creación</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-700 dark:text-slate-300 text-sm font-light">
+        <tr *ngFor="let t of transfers; let i = index" class="border-b border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700">
+          <td data-label="N°" class="py-3 px-6 font-semibold">{{ i + 1 }}</td>
+          <td data-label="Asig. Antigua" class="py-3 px-6">{{ t.oldAssignmentUsername || 'Usuario desconocido' }}</td>
+          <td data-label="Asig. Nueva" class="py-3 px-6">{{ t.newAssignmentUsername || 'Usuario desconocido' }}</td>
+          <td data-label="Motivo" class="py-3 px-6">{{ t.transferReason }}</td>
+          <td data-label="Documentos" class="py-3 px-6">
+            <div class="flex flex-wrap gap-2 justify-end md:justify-start">
+              <span *ngFor="let doc of t.documents"
+                class="text-xs font-semibold inline-flex items-center px-3 py-1 rounded-full"
+                [ngClass]="{
+                  'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300': detectDocumentType(doc) === 'pdf',
+                  'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300': detectDocumentType(doc) === 'jpg' || detectDocumentType(doc) === 'png',
+                  'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300': detectDocumentType(doc) === 'docx',
+                  'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300': detectDocumentType(doc) === 'xlsx',
+                  'bg-gray-200 text-gray-800 dark:bg-slate-600 dark:text-slate-200': detectDocumentType(doc) === 'other'
+                }"
+              >
+                <a href="{{doc}}" target="_blank" class="hover:underline">
+                  {{ doc.split('/').pop() }}
+                </a>
+              </span>
+            </div>
+          </td>
+          <td data-label="Fecha Creación" class="py-3 px-6">{{ t.createdAt | date: 'dd-MMM-yyyy' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-slate-900 dark:bg-opacity-75 overflow-y-auto h-full w-full flex justify-center items-center z-50">
+    <div class="relative p-8 bg-white dark:bg-slate-800 w-full max-w-lg mx-auto rounded-lg shadow-xl">
+      <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-white text-2xl font-semibold" (click)="closeModal()">&times;</button>
+      <h3 class="text-2xl font-bold mb-5 text-gray-800 dark:text-slate-100 text-center">{{ isEdit ? 'Editar Transferencia' : 'Nueva Transferencia' }}</h3>
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+        <!-- Mensaje de error de cajas de agua -->
+        <div *ngIf="errorMessages.waterBoxes" class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm text-yellow-800 dark:text-yellow-200">{{ errorMessages.waterBoxes }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="block">
+            <span class="text-gray-700 dark:text-slate-300 font-medium">N° suministro: <span class="text-red-500">*</span></span>
+            <select formControlName="waterBoxId" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-slate-700 dark:text-white dark:border-slate-600 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 p-2" 
+                    [ngClass]="{'border-red-500': form.get('waterBoxId')?.invalid && form.get('waterBoxId')?.touched}"
+                    [disabled]="waterBoxes.length === 0">
+              <option value="" disabled selected>{{ waterBoxes.length === 0 ? 'No hay cajas disponibles' : 'Seleccione una Caja de Agua' }}</option>
+              <option *ngFor="let box of waterBoxes" [value]="box.id">{{ box.boxCode }}</option>
+            </select>
+            <div *ngIf="form.get('waterBoxId')?.invalid && form.get('waterBoxId')?.touched" class="text-red-500 text-xs mt-1">Caja de agua requerida.</div>
+          </label>
+
+          <!-- Mensaje de carga de asignaciones -->
+          <div *ngIf="loadingAssignments" class="col-span-1 md:col-span-2 flex items-center justify-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-500 mr-3"></div>
+            <span class="text-blue-700 dark:text-blue-300">Cargando asignaciones...</span>
+          </div>
+
+          <!-- Mensaje de error de asignaciones -->
+          <div *ngIf="errorMessages.assignments" class="col-span-1 md:col-span-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-yellow-800 dark:text-yellow-200">{{ errorMessages.assignments }}</p>
+              </div>
+            </div>
+          </div>
+          <label class="block">
+            <span class="text-gray-700 dark:text-slate-300 font-medium">Antiguo Usuario: <span class="text-red-500">*</span></span>
+            <select formControlName="oldAssignmentId" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-slate-700 dark:text-white dark:border-slate-600 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 p-2" 
+                    [ngClass]="{'border-red-500': form.get('oldAssignmentId')?.invalid && form.get('oldAssignmentId')?.touched}"
+                    [disabled]="availableAssignments.length === 0 || loadingAssignments">
+              <option value="" disabled selected>{{ availableAssignments.length === 0 ? 'Seleccione primero una caja' : 'Seleccione...' }}</option>
+              <option *ngFor="let a of availableAssignments" [value]="a.id" [disabled]="a.id === form.get('newAssignmentId')?.value" [title]="a.tooltip">
+                {{ getUsernameByAssignmentId(a.id) }}
+              </option>
+            </select>
+            <div *ngIf="form.get('oldAssignmentId')?.invalid && form.get('oldAssignmentId')?.touched" class="text-red-500 text-xs mt-1">Asignación anterior requerida.</div>
+            <div *ngIf="form.errors?.['sameAssignment'] && form.get('oldAssignmentId')?.touched && form.get('newAssignmentId')?.touched" class="text-red-500 text-xs mt-1">Las asignaciones no pueden ser iguales.</div>
+          </label>
+          <label class="block">
+            <span class="text-gray-700 dark:text-slate-300 font-medium">Nuevo Usuario: <span class="text-red-500">*</span></span>
+            <select formControlName="newAssignmentId" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-slate-700 dark:text-white dark:border-slate-600 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 p-2" 
+                    [ngClass]="{'border-red-500': form.get('newAssignmentId')?.invalid && form.get('newAssignmentId')?.touched}"
+                    [disabled]="availableAssignments.length === 0 || loadingAssignments">
+              <option value="" disabled selected>{{ availableAssignments.length === 0 ? 'Seleccione primero una caja' : 'Seleccione...' }}</option>
+              <option *ngFor="let a of availableAssignments" [value]="a.id" [disabled]="a.id === form.get('oldAssignmentId')?.value" [title]="a.tooltip">
+                {{ getUsernameByAssignmentId(a.id) }}
+              </option>
+            </select>
+            <div *ngIf="form.get('newAssignmentId')?.invalid && form.get('newAssignmentId')?.touched" class="text-red-500 text-xs mt-1">Nueva asignación requerida.</div>
+            <div *ngIf="form.errors?.['sameAssignment'] && form.get('oldAssignmentId')?.touched && form.get('newAssignmentId')?.touched" class="text-red-500 text-xs mt-1">Las asignaciones no pueden ser iguales.</div>
+          </label>
+        </div>
+        <label class="block">
+          <span class="text-gray-700 dark:text-slate-300 font-medium">Motivo de Transferencia: <span class="text-red-500">*</span></span>
+          <textarea formControlName="transferReason" rows="3" placeholder="Describa el motivo de la transferencia (mínimo 10 caracteres)..." 
+                    class="mt-1 block w-full rounded-md border-gray-300 dark:bg-slate-700 dark:text-white dark:border-slate-600 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 p-2" 
+                    [ngClass]="{'border-red-500': form.get('transferReason')?.invalid && form.get('transferReason')?.touched}"></textarea>
+          <div class="flex justify-between items-center mt-1">
+            <div class="text-red-500 text-xs">
+              <span *ngIf="form.get('transferReason')?.errors?.['required'] && form.get('transferReason')?.touched">Motivo es requerido.</span>
+              <span *ngIf="form.get('transferReason')?.errors?.['minLength'] && form.get('transferReason')?.touched">
+                Mínimo 10 caracteres (actual: {{ form.get('transferReason')?.errors?.['minLength']?.actualLength }}).
+              </span>
+              <span *ngIf="form.get('transferReason')?.errors?.['maxLength'] && form.get('transferReason')?.touched">
+                Máximo 500 caracteres (actual: {{ form.get('transferReason')?.errors?.['maxLength']?.actualLength }}).
+              </span>
+            </div>
+            <span class="text-xs text-gray-500 dark:text-gray-400">
+              {{ (form.get('transferReason')?.value || '').length }}/500
+            </span>
+          </div>
+        </label>
+        <div class="space-y-3 p-4 border dark:border-slate-600 rounded-md">
+            <label class="block text-gray-700 dark:text-slate-300 font-medium">Documentos de Soporte (URLs):</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Agregue enlaces a documentos que respalden esta transferencia (opcional)</p>
+            <div formArrayName="documents" class="space-y-3">
+              <div *ngFor="let docControl of documents.controls; let i = index" [formGroupName]="i" class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-gray-50 dark:bg-slate-700/50 p-2 rounded-md">
+                <div class="w-full sm:flex-1">
+                  <input type="url" formControlName="url" placeholder="https://ejemplo.com/documento.pdf" 
+                         class="w-full rounded-md border-gray-300 dark:bg-slate-700 dark:text-white dark:border-slate-600 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 p-2"
+                         [ngClass]="{'border-red-500': docControl.get('url')?.invalid && docControl.get('url')?.touched}" />
+                  <div *ngIf="docControl.get('url')?.errors?.['invalidUrl'] && docControl.get('url')?.touched" class="text-red-500 text-xs mt-1">
+                    URL inválida. Debe comenzar con http:// o https://
+                  </div>
+                </div>
+                <div class="flex items-center space-x-2 flex-shrink-0">
+                  <button type="button" (click)="removeDocument(i)" class="px-3 py-1 text-sm font-semibold text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/40 rounded-full hover:bg-red-200 dark:hover:bg-red-900/60" title="Quitar URL">Quitar</button>
+                </div>
+              </div>
+            </div>
+            <button type="button" (click)="addDocument()" class="mt-2 px-3 py-1 border border-dashed border-gray-400 dark:border-slate-500 text-gray-600 dark:text-slate-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-800 text-sm flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+              <span>Agregar URL</span>
+            </button>
+        </div>
+        <div class="flex justify-end space-x-3 pt-4">
+          <button type="button" (click)="closeModal()" class="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-slate-600 dark:text-slate-200 dark:hover:bg-slate-500 font-semibold rounded-lg transition duration-300 ease-in-out">Cancelar</button>
+          <button type="submit" [disabled]="form.invalid || loadingAssignments" 
+                  class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2">
+            <svg *ngIf="loadingAssignments" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{{ isEdit ? 'Actualizar' : 'Crear' }} Transferencia</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

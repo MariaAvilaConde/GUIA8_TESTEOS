@@ -1,0 +1,808 @@
+<!-- Header Section -->
+<div class="bg-white border-b border-gray-200 shadow-sm">
+     <div class="max-w-full px-6 mx-auto">
+          <div class="flex items-center justify-between py-6">
+               <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Movimientos de Inventario</h1>
+                    <p class="mt-2 text-sm text-gray-600">Gestiona y visualiza todos los movimientos del KARDEX</p>
+               </div>
+               <div class="flex space-x-3">
+                    <button (click)="showConsumptionForm()"
+                         class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                   d="M17 13l-3 3m0 0l-3-3m3 3V4m0 9a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                         </svg>
+                         Registrar Salida
+                    </button>
+                    <button (click)="toggleFilters()"
+                         class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                   d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4">
+                              </path>
+                         </svg>
+                         {{ showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
+                    </button>
+                    <button (click)="exportToExcel()"
+                         class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                   d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                              </path>
+                         </svg>
+                         Exportar Excel
+                    </button>
+               </div>
+          </div>
+     </div>
+</div>
+
+<!-- Filters Section -->
+<div *ngIf="showFilters" class="border-b border-gray-200 bg-gray-50">
+     <div class="max-w-full px-6 py-8 mx-auto">
+          <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+               <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-medium text-gray-900">Filtros de Búsqueda</h3>
+                    <button type="button" (click)="clearFilters()"
+                         class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                         Limpiar Filtros
+                    </button>
+               </div>
+               <form [formGroup]="filterForm" class="space-y-6">
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                         <!-- Product Filter -->
+                         <div class="space-y-2">
+                              <label for="productId" class="block text-sm font-medium text-gray-700">Producto</label>
+                              <select id="productId" formControlName="productId"
+                                   class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm">
+                                   <option value="">Todos los productos</option>
+                                   <option *ngFor="let product of products" [value]="product?.productId">
+                                        {{ product?.productName || 'Sin nombre' }} ({{ product?.productCode || 'Sin
+                                        código' }})
+                                   </option>
+                              </select>
+                         </div>
+
+                         <!-- Movement Type Filter -->
+                         <div class="space-y-2">
+                              <label for="movementType" class="block text-sm font-medium text-gray-700">Tipo de
+                                   Movimiento</label>
+                              <select id="movementType" formControlName="movementType"
+                                   class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm">
+                                   <option value="">Todos los tipos</option>
+                                   <option *ngFor="let type of movementTypes" [value]="type.value">{{ type.label }}
+                                   </option>
+                              </select>
+                         </div>
+
+                         <!-- Movement Reason Filter -->
+                         <div class="space-y-2">
+                              <label for="movementReason" class="block text-sm font-medium text-gray-700">Motivo</label>
+                              <select id="movementReason" formControlName="movementReason"
+                                   class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm">
+                                   <option value="">Todos los motivos</option>
+                                   <option *ngFor="let reason of movementReasons" [value]="reason.value">{{ reason.label
+                                        }}</option>
+                              </select>
+                         </div>
+
+                         <!-- Sort Options -->
+                         <div class="space-y-2">
+                              <label for="sortBy" class="block text-sm font-medium text-gray-700">Ordenar por</label>
+                              <div class="grid grid-cols-2 gap-2">
+                                   <select id="sortBy" formControlName="sortBy"
+                                        class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm">
+                                        <option value="movementDate">Fecha</option>
+                                        <option value="quantity">Cantidad</option>
+                                        <option value="unitCost">Costo</option>
+                                   </select>
+                                   <select id="sortDirection" formControlName="sortDirection"
+                                        class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm">
+                                        <option value="DESC">Desc.</option>
+                                        <option value="ASC">Asc.</option>
+                                   </select>
+                              </div>
+                         </div>
+                    </div>
+
+                    <!-- Date Range Filters -->
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                         <div class="space-y-2">
+                              <label for="startDate" class="block text-sm font-medium text-gray-700">Fecha
+                                   Inicio</label>
+                              <input type="date" id="startDate" formControlName="startDate"
+                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm">
+                         </div>
+                         <div class="space-y-2">
+                              <label for="endDate" class="block text-sm font-medium text-gray-700">Fecha Fin</label>
+                              <input type="date" id="endDate" formControlName="endDate"
+                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm">
+                         </div>
+                    </div>
+               </form>
+          </div>
+     </div>
+</div>
+
+<!-- Main Content -->
+<div class="max-w-full px-6 py-8 mx-auto">
+
+     <!-- Stats Cards -->
+     <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-3">
+          <div class="overflow-hidden bg-white rounded-lg shadow">
+               <div class="p-5">
+                    <div class="flex items-center">
+                         <div class="flex-shrink-0">
+                              <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z"></path>
+                              </svg>
+                         </div>
+                         <div class="flex-1 w-0 ml-5">
+                              <dl>
+                                   <dt class="text-sm font-medium text-gray-500 truncate">Total Entradas</dt>
+                                   <dd class="text-lg font-medium text-gray-900">{{ getMovementsCountByType('ENTRADA')
+                                        }}</dd>
+                              </dl>
+                         </div>
+                    </div>
+               </div>
+          </div>
+
+          <div class="overflow-hidden bg-white rounded-lg shadow">
+               <div class="p-5">
+                    <div class="flex items-center">
+                         <div class="flex-shrink-0">
+                              <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 13l-3 3m0 0l-3-3m3 3V4m0 9a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                              </svg>
+                         </div>
+                         <div class="flex-1 w-0 ml-5">
+                              <dl>
+                                   <dt class="text-sm font-medium text-gray-500 truncate">Total Salidas</dt>
+                                   <dd class="text-lg font-medium text-gray-900">{{ getMovementsCountByType('SALIDA') }}
+                                   </dd>
+                              </dl>
+                         </div>
+                    </div>
+               </div>
+          </div>
+
+          <div class="overflow-hidden bg-white rounded-lg shadow">
+               <div class="p-5">
+                    <div class="flex items-center">
+                         <div class="flex-shrink-0">
+                              <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                   </path>
+                              </svg>
+                         </div>
+                         <div class="flex-1 w-0 ml-5">
+                              <dl>
+                                   <dt class="text-sm font-medium text-gray-500 truncate">Total Movimientos</dt>
+                                   <dd class="text-lg font-medium text-gray-900">{{ totalMovements }}</dd>
+                              </dl>
+                         </div>
+                    </div>
+               </div>
+          </div>
+     </div>
+
+     <!-- Movements Table -->
+     <div class="overflow-hidden bg-white shadow sm:rounded-md">
+          <div class="px-4 py-5 sm:p-6">
+               <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-medium text-gray-900">Movimientos Recientes</h2>
+                    <div class="text-sm text-gray-500">
+                         <span *ngIf="totalMovements > 0">
+                              Mostrando {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize,
+                              totalMovements) }} de {{ totalMovements }} resultados
+                         </span>
+                         <span *ngIf="totalMovements === 0">
+                              No hay movimientos que mostrar
+                         </span>
+                    </div>
+               </div>
+
+               <!-- Loading State -->
+               <div *ngIf="loading" class="flex items-center justify-center py-12">
+                    <div class="w-12 h-12 border-b-2 border-indigo-600 rounded-full animate-spin"></div>
+               </div>
+
+               <!-- Empty State -->
+               <div *ngIf="!loading && movements.length === 0" class="py-12 text-center">
+                    <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                         </path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No hay movimientos</h3>
+                    <p class="mt-1 text-sm text-gray-500">Comienza creando un nuevo movimiento de inventario.</p>
+                    <div class="mt-6">
+                         <button type="button" (click)="createNewMovement()"
+                              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                              <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
+                              </svg>
+                              Nuevo Movimiento
+                         </button>
+                    </div>
+               </div>
+
+               <!-- Movements Table -->
+               <div *ngIf="!loading && movements.length > 0" class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                         <thead class="bg-gray-50">
+                              <tr>
+                                   <th scope="col"
+                                        class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Fecha
+                                   </th>
+                                   <th scope="col"
+                                        class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Producto
+                                   </th>
+                                   <th scope="col"
+                                        class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Tipo
+                                   </th>
+                                   <th scope="col"
+                                        class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Motivo
+                                   </th>
+                                   <th scope="col"
+                                        class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Cantidad
+                                   </th>
+                                   <th scope="col"
+                                        class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Costo Unit.
+                                   </th>
+                                   <th scope="col"
+                                        class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Stock
+                                   </th>
+                                   <th scope="col"
+                                        class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Referencia
+                                   </th>
+                                   <th scope="col" class="relative px-6 py-3">
+                                        <span class="sr-only">Acciones</span>
+                                   </th>
+                              </tr>
+                         </thead>
+                         <tbody class="bg-white divide-y divide-gray-200">
+                              <tr *ngFor="let movement of movements; trackBy: trackByMovementId"
+                                   class="transition-colors duration-150 ease-in-out cursor-pointer hover:bg-gray-50"
+                                   (click)="viewMovementDetail(movement)">
+                                   <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
+                                        {{ formatDateTime(movement.movementDate) }}
+                                   </td>
+                                   <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">{{ movement.productName ||
+                                             getProductName(movement.productId) }}</div>
+                                        <div class="text-sm text-gray-500">{{ movement.productCode }}</div>
+                                   </td>
+                                   <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                             [ngClass]="getMovementTypeConfig(movement.movementType).class">
+                                             {{ getMovementTypeConfig(movement.movementType).label }}
+                                        </span>
+                                   </td>
+                                   <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
+                                        {{ getMovementReasonLabel(movement.movementReason) }}
+                                   </td>
+                                   <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
+                                        {{ movement.quantity }}
+                                   </td>
+                                   <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
+                                        {{ formatCurrency(movement.unitCost) }}
+                                   </td>
+                                   <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                             <span class="text-gray-500">{{ movement.previousStock }}</span>
+                                             <span class="mx-2">→</span>
+                                             <span class="font-medium">{{ movement.newStock }}</span>
+                                        </div>
+                                   </td>
+                                   <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                        {{ movement.referenceDocument || '-' }}
+                                   </td>
+                                   <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
+                                        <button type="button"
+                                             class="text-indigo-600 transition-colors duration-150 ease-in-out hover:text-indigo-900"
+                                             (click)="viewMovementDetail(movement); $event.stopPropagation()">
+                                             Ver detalles
+                                        </button>
+                                   </td>
+                              </tr>
+                         </tbody>
+                    </table>
+               </div>
+
+               <!-- Pagination -->
+               <div *ngIf="!loading && movements.length > 0"
+                    class="flex items-center justify-between px-4 py-3 mt-6 bg-white border-t border-gray-200 sm:px-6">
+                    <div class="flex justify-between flex-1 sm:hidden">
+                         <button (click)="previousPage()" [disabled]="!hasPreviousPage()"
+                              class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                              Anterior
+                         </button>
+                         <button (click)="nextPage()" [disabled]="!hasNextPage()"
+                              class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                              Siguiente
+                         </button>
+                    </div>
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                         <div>
+                              <p class="text-sm text-gray-700">
+                                   Mostrando
+                                   <span class="font-medium">{{ (currentPage * pageSize) + 1 }}</span>
+                                   a
+                                   <span class="font-medium">{{ Math.min((currentPage + 1) * pageSize, totalMovements)
+                                        }}</span>
+                                   de
+                                   <span class="font-medium">{{ totalMovements }}</span>
+                                   resultados
+                              </p>
+                         </div>
+                         <div>
+                              <nav class="relative z-0 inline-flex -space-x-px rounded-md shadow-sm"
+                                   aria-label="Pagination">
+                                   <!-- Previous Button -->
+                                   <button (click)="previousPage()" [disabled]="!hasPreviousPage()"
+                                        class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <span class="sr-only">Previous</span>
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                             <path fill-rule="evenodd"
+                                                  d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                                  clip-rule="evenodd"></path>
+                                        </svg>
+                                   </button>
+
+                                   <!-- Page Numbers -->
+                                   <button *ngFor="let page of getPageNumbers()" (click)="goToPage(page)"
+                                        class="relative inline-flex items-center px-4 py-2 text-sm font-medium border"
+                                        [ngClass]="{
+                  'z-10 bg-indigo-50 border-indigo-500 text-indigo-600': page === currentPage,
+                  'bg-white border-gray-300 text-gray-500 hover:bg-gray-50': page !== currentPage
+                }">
+                                        {{ page + 1 }}
+                                   </button>
+
+                                   <!-- Next Button -->
+                                   <button (click)="nextPage()" [disabled]="!hasNextPage()"
+                                        class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <span class="sr-only">Next</span>
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                             <path fill-rule="evenodd"
+                                                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                                  clip-rule="evenodd"></path>
+                                        </svg>
+                                   </button>
+                              </nav>
+                         </div>
+                    </div>
+               </div>
+          </div>
+     </div>
+</div>
+
+<!-- Movement Detail Modal -->
+<div *ngIf="selectedMovement" class="fixed inset-0 overflow-y-auto z-5000" aria-labelledby="modal-title" role="dialog"
+     aria-modal="true">
+     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+          <!-- Background overlay with blur -->
+          <div class="fixed transition-opacity bg-transparent bg-opacity-50 backdrop-blur-sm"
+               (click)="closeMovementDetail()">
+          </div>
+
+          <!-- Modal panel -->
+          <div
+               class="inline-block overflow-hidden text-left align-middle transition-all transform bg-white shadow-2xl rounded-xl sm:my-8 sm:max-w-6xl sm:w-full">
+               <div class="px-6 pt-6 pb-4 bg-white">
+                    <div class="sm:flex sm:items-start">
+                         <div class="w-full mt-3 text-center sm:mt-0 sm:text-left">
+                              <h3 class="mb-6 text-xl font-semibold leading-6 text-gray-900" id="modal-title">
+                                   Detalle del Movimiento
+                              </h3>
+
+                              <div class="space-y-6">
+                                   <!-- Información básica -->
+                                   <div class="p-4 rounded-lg bg-gray-50">
+                                        <h4 class="mb-3 text-lg font-medium text-gray-900">Información del Movimiento
+                                        </h4>
+                                        <div class="grid grid-cols-2 gap-4">
+                                             <div>
+                                                  <label class="block text-sm font-medium text-gray-500">Fecha</label>
+                                                  <p class="mt-1 text-sm text-gray-900">{{
+                                                       formatDateTime(selectedMovement.movementDate) }}</p>
+                                             </div>
+                                             <div>
+                                                  <label class="block text-sm font-medium text-gray-500">Tipo</label>
+                                                  <span class="inline-flex items-center px-3 py-1 mt-1 text-xs font-medium rounded-full"
+                                                       [ngClass]="getMovementTypeConfig(selectedMovement.movementType).class">
+                                                       {{ getMovementTypeConfig(selectedMovement.movementType).label }}
+                                                  </span>
+                                             </div>
+                                             <div class="col-span-2">
+                                                  <label class="block text-sm font-medium text-gray-500">Motivo</label>
+                                                  <p class="mt-1 text-sm text-gray-900">{{
+                                                       getMovementReasonLabel(selectedMovement.movementReason) }}</p>
+                                             </div>
+                                        </div>
+                                   </div>
+
+                                   <!-- Información del producto -->
+                                   <div class="p-4 rounded-lg bg-blue-50">
+                                        <h4 class="mb-3 text-lg font-medium text-gray-900">Producto</h4>
+                                        <div>
+                                             <label class="block text-sm font-medium text-gray-500">Nombre</label>
+                                             <p class="mt-1 text-sm font-semibold text-gray-900">
+                                                  {{ selectedMovement.productName ||
+                                                  getProductName(selectedMovement.productId) }}
+                                                  <span class="font-normal text-gray-500">({{
+                                                       selectedMovement.productCode }})</span>
+                                             </p>
+                                        </div>
+                                   </div>
+
+                                   <!-- Información financiera -->
+                                   <div class="p-4 rounded-lg bg-green-50">
+                                        <h4 class="mb-3 text-lg font-medium text-gray-900">Información Financiera</h4>
+                                        <div class="grid grid-cols-3 gap-4">
+                                             <div>
+                                                  <label
+                                                       class="block text-sm font-medium text-gray-500">Cantidad</label>
+                                                  <p class="mt-1 text-sm font-semibold text-gray-900">{{
+                                                       selectedMovement.quantity }}</p>
+                                             </div>
+                                             <div>
+                                                  <label class="block text-sm font-medium text-gray-500">Costo
+                                                       Unitario</label>
+                                                  <p class="mt-1 text-sm text-gray-900">{{
+                                                       formatCurrency(selectedMovement.unitCost) }}</p>
+                                             </div>
+                                             <div>
+                                                  <label class="block text-sm font-medium text-gray-500">Costo
+                                                       Total</label>
+                                                  <p class="mt-1 text-sm font-semibold text-green-700">{{
+                                                       formatCurrency(calculateTotalCost(selectedMovement)) }}</p>
+                                             </div>
+                                        </div>
+                                   </div>
+
+                                   <!-- Información de stock -->
+                                   <div class="p-4 rounded-lg bg-yellow-50">
+                                        <h4 class="mb-3 text-lg font-medium text-gray-900">Control de Stock</h4>
+                                        <div class="grid grid-cols-2 gap-4">
+                                             <div>
+                                                  <label class="block text-sm font-medium text-gray-500">Stock
+                                                       Anterior</label>
+                                                  <p class="mt-1 text-sm text-gray-900">{{
+                                                       selectedMovement.previousStock }}</p>
+                                             </div>
+                                             <div>
+                                                  <label class="block text-sm font-medium text-gray-500">Stock
+                                                       Nuevo</label>
+                                                  <p class="mt-1 text-sm font-semibold text-gray-900">{{
+                                                       selectedMovement.newStock }}</p>
+                                             </div>
+                                        </div>
+                                   </div>
+
+                                   <!-- Información del cliente/usuario -->
+                                   <div class="p-4 rounded-lg bg-purple-50">
+                                        <h4 class="mb-3 text-lg font-medium text-gray-900">Usuario Responsable</h4>
+                                        <div *ngIf="loadingClient" class="flex items-center space-x-2">
+                                             <div
+                                                  class="w-4 h-4 border-2 border-purple-500 rounded-full border-t-transparent animate-spin">
+                                             </div>
+                                             <span class="text-sm text-gray-500">Cargando datos del usuario...</span>
+                                        </div>
+                                        <div *ngIf="!loadingClient">
+                                             <div *ngIf="selectedClient; else basicUserInfo" class="space-y-2">
+                                                  <div class="grid grid-cols-2 gap-4">
+                                                       <div>
+                                                            <label
+                                                                 class="block text-sm font-medium text-gray-500">Nombre
+                                                                 Completo</label>
+                                                            <p class="mt-1 text-sm font-semibold text-gray-900">
+                                                                 {{ selectedClient.firstName }} {{
+                                                                 selectedClient.lastName }}
+                                                            </p>
+                                                       </div>
+                                                       <div *ngIf="selectedClient.userCode">
+                                                            <label
+                                                                 class="block text-sm font-medium text-gray-500">Código
+                                                                 Usuario</label>
+                                                            <p class="mt-1 text-sm text-gray-900">{{
+                                                                 selectedClient.userCode }}</p>
+                                                       </div>
+                                                  </div>
+                                                  <div class="grid grid-cols-2 gap-4">
+                                                       <div>
+                                                            <label
+                                                                 class="block text-sm font-medium text-gray-500">Email</label>
+                                                            <p class="mt-1 text-sm text-gray-900">{{
+                                                                 selectedClient.email }}</p>
+                                                       </div>
+                                                       <div *ngIf="selectedClient.phone">
+                                                            <label
+                                                                 class="block text-sm font-medium text-gray-500">Teléfono</label>
+                                                            <p class="mt-1 text-sm text-gray-900">{{
+                                                                 selectedClient.phone }}</p>
+                                                       </div>
+                                                  </div>
+                                                  <div *ngIf="selectedClient.address" class="mt-3">
+                                                       <label
+                                                            class="block text-sm font-medium text-gray-500">Dirección</label>
+                                                       <p class="mt-1 text-sm text-gray-900">{{ selectedClient.address
+                                                            }}</p>
+                                                  </div>
+
+                                             </div>
+                                             <ng-template #basicUserInfo>
+                                                  <div>
+                                                       <label
+                                                            class="block text-sm font-medium text-gray-500">Usuario</label>
+                                                       <p class="mt-1 text-sm text-gray-900">{{
+                                                            selectedMovement.userName ||
+                                                            selectedMovement.userId }}</p>
+                                                  </div>
+                                             </ng-template>
+                                        </div>
+                                   </div>
+
+                                   <!-- Información adicional -->
+                                   <div *ngIf="selectedMovement.referenceDocument || selectedMovement.observations"
+                                        class="p-4 rounded-lg bg-gray-50">
+                                        <h4 class="mb-3 text-lg font-medium text-gray-900">Información Adicional</h4>
+                                        <div class="space-y-3">
+                                             <div *ngIf="selectedMovement.referenceDocument">
+                                                  <label class="block text-sm font-medium text-gray-500">Documento de
+                                                       Referencia</label>
+                                                  <p class="mt-1 text-sm text-gray-900">{{
+                                                       selectedMovement.referenceDocument }}</p>
+                                             </div>
+                                             <div *ngIf="selectedMovement.observations">
+                                                  <label
+                                                       class="block text-sm font-medium text-gray-500">Observaciones</label>
+                                                  <p class="mt-1 text-sm text-gray-900">{{ selectedMovement.observations
+                                                       }}</p>
+                                             </div>
+                                        </div>
+                                   </div>
+                              </div>
+                         </div>
+                    </div>
+               </div>
+               <div class="px-6 py-4 bg-gray-50 rounded-b-xl sm:flex sm:flex-row-reverse">
+                    <button type="button" (click)="closeMovementDetail()"
+                         class="inline-flex justify-center w-full px-6 py-2 text-base font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                   d="M6 18L18 6M6 6l12 12"></path>
+                         </svg>
+                         Cerrar
+                    </button>
+               </div>
+          </div>
+     </div>
+</div>
+
+<!-- Consumption Registration Modal -->
+<div *ngIf="showConsumptionModal" class="fixed inset-0 z-50 overflow-y-auto">
+     <div class="flex items-center justify-center min-h-screen p-4">
+          <!-- Background overlay -->
+          <div class="fixed inset-0 bg-black/50" (click)="closeConsumptionModal()"></div>
+
+          <!-- Modal panel -->
+          <div class="relative w-full max-w-2xl max-h-screen overflow-y-auto bg-white rounded-lg shadow-xl">
+               <form [formGroup]="consumptionForm" (ngSubmit)="submitConsumption()">
+                    <div class="p-6">
+                         <div class="flex items-start gap-4">
+                              <div
+                                   class="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-red-100 rounded-full">
+                                   <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                             d="M17 13l-3 3m0 0l-3-3m3 3V4m0 9a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                   </svg>
+                              </div>
+                              <div class="flex-1">
+                                   <h3 class="text-lg font-medium text-gray-900" id="consumption-modal-title">
+                                        Registrar Salida por Consumo
+                                   </h3>
+                                   <p class="mt-1 text-sm text-gray-500">
+                                        Complete los datos para registrar una salida de inventario por consumo de
+                                        producto.
+                                   </p>
+                              </div>
+                         </div>
+
+                         <!-- Form Fields -->
+                         <div class="mt-6 space-y-6">
+                              <!-- Product Selection -->
+                              <div>
+                                   <label for="consumption-product"
+                                        class="block mb-1 text-sm font-medium text-gray-700">
+                                        Producto <span class="text-red-500">*</span>
+                                   </label>
+                                   <select id="consumption-product" formControlName="productId"
+                                        (change)="onProductChange()"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 placeholder:text-gray-400"
+                                        [class.border-red-300]="hasFieldError('productId', 'required')">
+                                        <option value="">Seleccionar producto...</option>
+                                        <option *ngFor="let product of products" [value]="product?.productId">
+                                             {{ product?.productName }} ({{ product?.productCode }})
+                                        </option>
+                                   </select>
+                                   <p *ngIf="hasFieldError('productId', 'required')" class="mt-1 text-sm text-red-600">
+                                        {{ getFieldErrorMessage('productId') }}
+                                   </p>
+                              </div>
+
+                              <!-- Quantity and Unit Cost Row -->
+                              <div class="grid grid-cols-2 gap-4">
+                                   <div>
+                                        <label for="consumption-quantity"
+                                             class="block mb-1 text-sm font-medium text-gray-700">
+                                             Cantidad <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="number" id="consumption-quantity" formControlName="quantity"
+                                             min="1" step="1"
+                                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 placeholder:text-gray-400"
+                                             [class.border-red-300]="hasFieldError('quantity', 'required') || hasFieldError('quantity', 'min')"
+                                             placeholder="Cantidad a consumir">
+                                        <p *ngIf="hasFieldError('quantity', 'required') || hasFieldError('quantity', 'min')"
+                                             class="mt-1 text-sm text-red-600">
+                                             {{ getFieldErrorMessage('quantity') }}
+                                        </p>
+                                   </div>
+
+                                   <div>
+                                        <label for="consumption-unitCost"
+                                             class="block mb-1 text-sm font-medium text-gray-700">
+                                             Costo Unitario <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="number" id="consumption-unitCost" formControlName="unitCost"
+                                             min="0.01" step="0.01" readonly
+                                             class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md cursor-not-allowed"
+                                             placeholder="Se obtiene del producto">
+                                        <p *ngIf="hasFieldError('unitCost', 'required') || hasFieldError('unitCost', 'min')"
+                                             class="mt-1 text-sm text-red-600">
+                                             {{ getFieldErrorMessage('unitCost') }}
+                                        </p>
+                                   </div>
+                              </div>
+
+                              <!-- Total Value Display -->
+                              <div *ngIf="consumptionForm.get('quantity')?.value && consumptionForm.get('unitCost')?.value"
+                                   class="p-3 rounded-md bg-gray-50">
+                                   <div class="text-sm">
+                                        <span class="font-medium text-gray-700">Valor Total:</span>
+                                        <span class="ml-2 font-semibold text-green-600">
+                                             {{ formatCurrency(calculateTotalConsumptionValue()) }}
+                                        </span>
+                                   </div>
+                              </div>
+
+                              <!-- Movement Reason -->
+                              <div>
+                                   <label for="consumption-reason" class="block mb-1 text-sm font-medium text-gray-700">
+                                        Motivo del Consumo <span class="text-red-500">*</span>
+                                   </label>
+                                   <select id="consumption-reason" formControlName="movementReason"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                        <option value="USO_INTERNO">Uso Interno</option>
+                                        <option value="VENTA">Venta</option>
+                                        <option value="MERMA">Merma</option>
+                                        <option value="TRANSFERENCIA">Transferencia</option>
+                                        <option value="OTRO">Otro</option>
+                                   </select>
+                              </div>
+
+                              <!-- Stock Information -->
+                              <div class="grid grid-cols-2 gap-4">
+                                   <div>
+                                        <label for="consumption-previousStock"
+                                             class="block mb-1 text-sm font-medium text-gray-700">
+                                             Stock Anterior <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="number" id="consumption-previousStock"
+                                             formControlName="previousStock" min="0" readonly
+                                             class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md cursor-not-allowed"
+                                             placeholder="Se obtiene del producto">
+                                        <p *ngIf="hasFieldError('previousStock', 'required') || hasFieldError('previousStock', 'min')"
+                                             class="mt-1 text-sm text-red-600">
+                                             {{ getFieldErrorMessage('previousStock') }}
+                                        </p>
+                                   </div>
+
+                                   <div>
+                                        <label for="consumption-newStock"
+                                             class="block mb-1 text-sm font-medium text-gray-700">
+                                             Stock Nuevo <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="number" id="consumption-newStock" formControlName="newStock"
+                                             min="0" readonly
+                                             class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md cursor-not-allowed"
+                                             placeholder="Se calcula automáticamente">
+
+                                        <!-- Mensajes de estado de stock -->
+                                        <div class="mt-1">
+                                             <p *ngIf="!hasProductStock() && consumptionForm.get('productId')?.value"
+                                                  class="flex items-center gap-1 text-sm text-red-600">
+                                                  <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                       viewBox="0 0 24 24">
+                                                       <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z">
+                                                       </path>
+                                                  </svg>
+                                                  Producto sin stock - No se puede realizar salida
+                                             </p>
+                                             <p *ngIf="hasProductStock() && !hassufficientStock() && consumptionForm.get('quantity')?.value > 0"
+                                                  class="flex items-center gap-1 text-sm text-orange-600">
+                                                  <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                       viewBox="0 0 24 24">
+                                                       <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z">
+                                                       </path>
+                                                  </svg>
+                                                  Stock insuficiente para la cantidad solicitada
+                                             </p>
+                                             <p *ngIf="hasProductStock() && hassufficientStock() && consumptionForm.get('quantity')?.value > 0"
+                                                  class="flex items-center gap-1 text-sm text-green-600">
+                                                  <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                       viewBox="0 0 24 24">
+                                                       <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                  </svg>
+                                                  Stock suficiente para realizar la salida
+                                             </p>
+                                        </div>
+                                   </div>
+                              </div>
+
+                              <!-- Reference Information -->
+                              <div>
+                                   <label for="consumption-referenceDocument"
+                                        class="block mb-1 text-sm font-medium text-gray-700">
+                                        Documento Referencia
+                                   </label>
+                                   <input type="text" id="consumption-referenceDocument"
+                                        formControlName="referenceDocument"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 placeholder:text-gray-400"
+                                        placeholder="Número de documento o requisición">
+                              </div>
+                         </div>
+                    </div>
+
+                    <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50">
+                         <button type="button" (click)="closeConsumptionModal()"
+                              class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500">
+                              Cancelar
+                         </button>
+                         <button type="submit"
+                              [disabled]="!consumptionForm.valid || submittingConsumption || !hasProductStock() || !hassufficientStock()"
+                              class="flex items-center gap-2 px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                              <svg *ngIf="submittingConsumption" class="w-4 h-4 animate-spin" fill="none"
+                                   stroke="currentColor" viewBox="0 0 24 24">
+                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                   </path>
+                              </svg>
+                              {{ submittingConsumption ? 'Registrando...' : 'Registrar Salida' }}
+                         </button>
+                    </div>
+               </form>
+          </div>
+     </div>
+</div>

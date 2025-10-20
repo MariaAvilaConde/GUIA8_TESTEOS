@@ -1,0 +1,80 @@
+/* Estilos específicos para inventory-movements */
+
+.movement-card {
+  @apply bg-white rounded-lg shadow-md p-4 mb-4;
+}
+
+.movement-type-entrada {
+  @apply text-green-600 bg-green-100 border-green-200;
+}
+
+.movement-type-salida {
+  @apply text-red-600 bg-red-100 border-red-200;
+}
+
+.movement-type-ajuste {
+  @apply text-blue-600 bg-blue-100 border-blue-200;
+}
+
+.filter-panel {
+  @apply bg-gray-50 border border-gray-200 rounded-lg p-4;
+}
+
+.stock-indicator {
+  @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.stock-normal {
+  @apply bg-green-100 text-green-800;
+}
+
+.stock-critico {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.stock-agotado {
+  @apply bg-red-100 text-red-800;
+}
+
+/* Loading animation */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+  .table-responsive {
+    @apply overflow-x-auto;
+  }
+
+  .table-responsive table {
+    @apply min-w-full;
+  }
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 rounded;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-600;
+}
