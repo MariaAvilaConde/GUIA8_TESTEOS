@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: ${NOMBRE_MICROSERVICIO:ms-water-quality}
+  main:
+    lazy-initialization: true
+    banner-mode: console  # This will show the default Spring Boot banner
+  data:
+    mongodb:
+      uri: mongodb+srv://${MONGO_USERNAME:sistemajass}:${MONGO_PASSWORD:ZC7O1Ok40SwkfEje}@sistemajass.jn6cpoz.mongodb.net/${MONGO_DATABASE:JASS_DIGITAL}?retryWrites=true&w=majority&maxPoolSize=3&minPoolSize=1&maxIdleTimeMS=30000&serverSelectionTimeoutMS=5000
+  web:
+    resources:
+      cache:
+        period: 86400
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://lab.vallegrande.edu.pe/jass/keycloak/realms/sistema-jass
+          jwk-set-uri: https://lab.vallegrande.edu.pe/jass/keycloak/realms/sistema-jass/protocol/openid-connect/certs
+
+server:
+  port: ${PORT:8087}
+  forward-headers-strategy: framework
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+  http2:
+    enabled: true
+
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      enabled: true
+      show-details: never
+
+logging:
+  level:
+    root: INFO  # Changed from ERROR to INFO to show more startup information
+    "[pe.edu.vallegrande]": WARN
+    "[org.springframework]": INFO  # Changed from ERROR to WARN to show startup info
+    "[org.mongodb]": WARN  # Changed from ERROR to WARN
+    "[org.springframework.web]": INFO  # Changed from ERROR to WARN
+    reactor: WARN  # Changed from ERROR to WARN
+  pattern:
+    console: "%d{HH:mm:ss} [%thread] %-5level - %msg%n"
+
+info:
+  app:
+    name: Water Quality Microservice
+    description: Microservicio para gestión de calidad de agua
+    version: 1.0.0
+
+user-service:
+  base-url: ${USER_SERVICE_URL:https://lab.vallegrande.edu.pe/jass/ms-users}
+  timeout: 5000
+
+organization-service:
+  base-url: ${ORGANIZATION_SERVICE_URL:https://lab.vallegrande.edu.pe/jass/ms-organization}
+  token: ${ORGANIZATION_SERVICE_TOKEN:your-super-admin-token-here}
