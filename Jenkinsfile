@@ -2,12 +2,12 @@ pipeline {
     agent any
 
     environment {
-        // 🔐 Token configurado en Jenkins (Manage Jenkins → Credentials)
+        // 🔐 Token configurado en Jenkins (Manage Jenkins → Credentials → Secret text con ID: SONAR_TOKEN)
         SONAR_TOKEN = credentials('SONAR_TOKEN')
 
-        // 🔑 Claves específicas de tu proyecto SonarCloud
+        // 🔑 Claves exactas de tu proyecto SonarCloud
         SONAR_PROJECT_KEY = 'MariaAvilaConde_GUIA8_TESTEOS'
-        SONAR_ORG = 'MariaAvilaConde'
+        SONAR_ORG = 'mariaavilaconde'  // ⚠️ En minúsculas, como aparece en tu URL de SonarCloud
     }
 
     tools {
@@ -26,14 +26,14 @@ pipeline {
         stage('Compile') {
             steps {
                 echo '⚙️ Compilando el proyecto...'
-                sh 'mvn clean compile'
+                sh 'mvn -B clean compile'
             }
         }
 
         stage('Test & Coverage') {
             steps {
                 echo '🧪 Ejecutando pruebas unitarias y generando cobertura...'
-                sh 'mvn test jacoco:report'
+                sh 'mvn -B test jacoco:report'
             }
             post {
                 always {
@@ -45,22 +45,26 @@ pipeline {
         stage('SonarCloud Analysis') {
             steps {
                 echo '🔍 Enviando análisis a SonarCloud...'
+                // ⚙️ "SonarCloud" debe coincidir con el nombre configurado en Jenkins > Manage Jenkins > Configure System > SonarQube servers
                 withSonarQubeEnv('SonarCloud') {
                     sh """
-                    mvn sonar:sonar \
-                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                        -Dsonar.organization=${SONAR_ORG} \
-                        -Dsonar.host.url=https://sonarcloud.io \
-                        -Dsonar.login=${SONAR_TOKEN}
+                        mvn -B verify sonar:sonar \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.organization=${SONAR_ORG} \
+                            -Dsonar.host.url=https://sonarcloud.io \
+                            -Dsonar.login=${SONAR_TOKEN}
                     """
                 }
             }
         }
 
         stage('Package') {
+            when {
+                expression { currentBuild.currentResult == 'SUCCESS' }
+            }
             steps {
                 echo '📦 Empaquetando la aplicación...'
-                sh 'mvn package -DskipTests'
+                sh 'mvn -B package -DskipTests'
             }
             post {
                 success {
@@ -78,7 +82,7 @@ pipeline {
             echo '🎉 Build completado exitosamente.'
         }
         failure {
-            echo '❌ Build fallido. Revisa los logs.'
+            echo '❌ Build fallido. Revisa los logs de SonarCloud o Maven.'
         }
     }
 }
