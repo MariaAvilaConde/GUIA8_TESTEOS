@@ -1,0 +1,445 @@
+<div
+     class="min-h-screen p-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:p-6 lg:p-8">
+     <div class="max-w-5xl mx-auto">
+          <!-- Header profesional -->
+          <div
+               class="p-6 mb-8 border shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 rounded-3xl">
+               <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-4">
+                         <button (click)="onCancel()"
+                              class="flex items-center justify-center w-12 h-12 transition-all duration-200 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-2xl group">
+                              <i
+                                   class="text-gray-600 transition-transform dark:text-gray-300 fas fa-arrow-left group-hover:-translate-x-1"></i>
+                         </button>
+                         <div>
+                              <h1
+                                   class="text-3xl font-bold text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text">
+                                   {{ pageTitle }}
+                              </h1>
+                              <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                   {{ isEditMode ? 'Actualiza la información del cliente' : 'Crea un nuevo cliente para
+                                   tu organización' }}
+                              </p>
+                         </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                         <div
+                              class="px-4 py-2 border border-blue-200 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-800 rounded-xl">
+                              <span class="text-sm font-medium text-blue-700 dark:text-blue-300">
+                                   <i class="mr-2 fas fa-building"></i>
+                                   {{ currentOrganizationName }}
+                              </span>
+                         </div>
+                    </div>
+               </div>
+          </div>
+
+          <!-- Indicador de carga -->
+          <div *ngIf="isLoading"
+               class="p-12 border shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 rounded-3xl">
+               <div class="flex flex-col items-center justify-center gap-6">
+                    <div class="relative">
+                         <div class="w-16 h-16 border-4 border-blue-200 rounded-full border-t-blue-600 animate-spin">
+                         </div>
+                         <div class="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full border-r-purple-600 animate-spin"
+                              style="animation-delay: -0.15s;"></div>
+                    </div>
+                    <div class="text-center">
+                         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Cargando información</h3>
+                         <p class="text-gray-600 dark:text-gray-400">Obteniendo datos del cliente...</p>
+                    </div>
+               </div>
+          </div>
+
+          <!-- Formulario principal -->
+          <form *ngIf="!isLoading && isFormInitialized" [formGroup]="clientForm" (ngSubmit)="onSubmit()"
+               class="overflow-hidden border shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 rounded-3xl">
+
+               <!-- Mensaje de error general -->
+               <div *ngIf="errors.general"
+                    class="p-6 border-b border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800">
+                    <div class="flex items-center gap-3">
+                         <i class="text-lg text-red-600 dark:text-red-400 fas fa-exclamation-triangle"></i>
+                         <div>
+                              <h4 class="font-semibold text-red-800 dark:text-red-200">Error en el formulario</h4>
+                              <p class="text-red-700 dark:text-red-300">{{ errors.general }}</p>
+                         </div>
+                    </div>
+               </div>
+
+               <div class="p-8">
+                    <!-- Sección 1: Información Personal -->
+                    <div class="mb-12">
+                         <div class="flex items-center gap-3 mb-8">
+                              <div
+                                   class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
+                                   <i class="text-lg text-white fas fa-user"></i>
+                              </div>
+                              <div>
+                                   <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Información Personal
+                                   </h2>
+                                   <p class="text-sm text-gray-600 dark:text-gray-400">Datos personales del cliente</p>
+                              </div>
+                         </div>
+
+                         <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+                              <!-- Tipo de Documento -->
+                              <div class="space-y-2">
+                                   <label
+                                        class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        <i class="text-gray-400 fas fa-id-card"></i>
+                                        Tipo de Documento
+                                        <span class="text-red-500">*</span>
+                                        <span *ngIf="isEditMode"
+                                             class="px-2 py-1 text-xs font-bold text-red-600 bg-red-100 rounded-full dark:text-red-300 dark:bg-red-900/30">
+                                             NO EDITABLE
+                                        </span>
+                                   </label>
+                                   <select formControlName="documentType" [disabled]="isEditMode"
+                                        [class.border-red-300]="hasError('documentType')"
+                                        [class.focus:ring-red-500]="hasError('documentType')"
+                                        [class.border-green-300]="!hasError('documentType') && clientForm.get('documentType')?.valid && clientForm.get('documentType')?.value"
+                                        [class.focus:ring-green-500]="!hasError('documentType') && clientForm.get('documentType')?.valid && clientForm.get('documentType')?.value"
+                                        [class.bg-slate-50]="isEditMode" [class.dark:bg-slate-700]="isEditMode"
+                                        [class.text-slate-600]="isEditMode" [class.dark:text-slate-300]="isEditMode"
+                                        class="w-full px-4 py-3.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none">
+                                        <option value="">Seleccione...</option>
+                                        <option value="DNI">DNI</option>
+                                        <option value="CARNET_EXTRANJERIA">Carnet de Extranjería</option>
+                                   </select>
+                                   <p *ngIf="hasError('documentType')"
+                                        class="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ getErrorMessage('documentType') }}
+                                   </p>
+                              </div>
+
+                              <!-- Número de Documento con RENIEC -->
+                              <div class="space-y-2">
+                                   <label
+                                        class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        <i class="text-gray-400 fas fa-hashtag"></i>
+                                        Número de Documento
+                                        <span class="text-red-500">*</span>
+                                        <span *ngIf="isEditMode"
+                                             class="px-2 py-1 text-xs font-bold text-red-600 bg-red-100 rounded-full dark:text-red-300 dark:bg-red-900/30">
+                                             NO EDITABLE
+                                        </span>
+                                   </label>
+                                   <div class="relative">
+                                        <input type="text" formControlName="documentNumber" [disabled]="isEditMode"
+                                             [class.border-red-300]="hasError('documentNumber')"
+                                             [class.focus:ring-red-500]="hasError('documentNumber')"
+                                             [class.border-green-300]="!hasError('documentNumber') && clientForm.get('documentNumber')?.valid && clientForm.get('documentNumber')?.value"
+                                             [class.focus:ring-green-500]="!hasError('documentNumber') && clientForm.get('documentNumber')?.valid && clientForm.get('documentNumber')?.value"
+                                             [class.pr-32]="clientForm.get('documentType')?.value === 'DNI' && !isEditMode"
+                                             [class.bg-slate-50]="isEditMode" [class.dark:bg-slate-700]="isEditMode"
+                                             [class.text-slate-600]="isEditMode"
+                                             [class.dark:text-slate-300]="isEditMode"
+                                             (input)="clientForm.get('documentType')?.value === 'DNI' && !isEditMode ? limitDniInput($event) : null"
+                                             [maxlength]="clientForm.get('documentType')?.value === 'DNI' ? 8 : 20"
+                                             class="w-full px-4 py-3.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                             [placeholder]="isEditMode ? 'Campo protegido' : (clientForm.get('documentType')?.value === 'DNI' ? '12345678' : 'ABC123DEF456')">
+
+                                        <!-- Botón RENIEC - solo en modo creación -->
+                                        <button *ngIf="clientForm.get('documentType')?.value === 'DNI' && !isEditMode"
+                                             type="button" (click)="consultReniecManually()"
+                                             [disabled]="isConsultingReniec || !clientForm.get('documentNumber')?.value"
+                                             class="absolute px-3 py-2 text-xs font-medium text-white transition-colors duration-200 -translate-y-1/2 bg-blue-600 rounded-lg right-2 top-1/2 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                             <i *ngIf="!isConsultingReniec" class="mr-1 fas fa-search"></i>
+                                             <i *ngIf="isConsultingReniec" class="mr-1 fas fa-spinner animate-spin"></i>
+                                             {{ isConsultingReniec ? 'Consultando...' : 'RENIEC' }}
+                                        </button>
+                                   </div>
+
+                                   <!-- Indicadores de estado RENIEC -->
+                                   <div *ngIf="isConsultingReniec"
+                                        class="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+                                        <i class="fas fa-spinner animate-spin"></i>
+                                        <span>Consultando datos en RENIEC...</span>
+                                   </div>
+
+                                   <div *ngIf="reniecDataFound && !isConsultingReniec"
+                                        class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                                             <i class="fas fa-check-circle"></i>
+                                             <span>Datos obtenidos de RENIEC</span>
+                                        </div>
+                                        <button type="button" (click)="clearReniecData()"
+                                             class="text-xs text-gray-600 transition-colors dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400">
+                                             <i class="mr-1 fas fa-times"></i>
+                                             Limpiar
+                                        </button>
+                                   </div>
+
+                                   <p *ngIf="hasError('documentNumber')"
+                                        class="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ getErrorMessage('documentNumber') }}
+                                   </p>
+                              </div>
+
+                              <!-- Status Badge -->
+                              <div class="flex items-end">
+                                   <div *ngIf="clientForm.get('documentType')?.value === 'DNI'"
+                                        class="w-full p-4 border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800 rounded-xl">
+                                        <div class="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300">
+                                             <i class="fas fa-info-circle"></i>
+                                             <span>Los datos se consultarán automáticamente en RENIEC</span>
+                                        </div>
+                                   </div>
+                              </div>
+                         </div>
+
+                         <!-- Nombres y Apellidos -->
+                         <div class="grid grid-cols-1 gap-8 mt-8 md:grid-cols-2">
+                              <!-- Nombres -->
+                              <div class="space-y-2">
+                                   <label
+                                        class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        <i class="text-gray-400 fas fa-user"></i>
+                                        Nombres
+                                        <span class="text-red-500">*</span>
+                                        <span *ngIf="isEditMode || clientForm.get('firstName')?.disabled"
+                                             class="px-2 py-1 ml-2 text-xs border rounded-md text-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
+                                             <i class="mr-1 fas fa-shield-alt"></i>
+                                             {{ isEditMode ? 'PROTEGIDO' : 'AUTO' }}
+                                        </span>
+                                   </label>
+                                   <input type="text" formControlName="firstName" [disabled]="isEditMode"
+                                        [class.border-red-300]="hasError('firstName')"
+                                        [class.focus:ring-red-500]="hasError('firstName')"
+                                        [class.border-green-300]="!hasError('firstName') && clientForm.get('firstName')?.valid && clientForm.get('firstName')?.value"
+                                        [class.focus:ring-green-500]="!hasError('firstName') && clientForm.get('firstName')?.valid && clientForm.get('firstName')?.value"
+                                        [class.bg-slate-50]="isEditMode || (clientForm.get('firstName')?.disabled || false)"
+                                        [class.dark:bg-slate-700\50]="isEditMode || (clientForm.get('firstName')?.disabled || false)"
+                                        [class.text-slate-600]="isEditMode || (clientForm.get('firstName')?.disabled || false)"
+                                        [class.dark:text-slate-300]="isEditMode || (clientForm.get('firstName')?.disabled || false)"
+                                        class="w-full px-4 py-3.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:cursor-not-allowed"
+                                        [placeholder]="isEditMode ? 'Campo protegido' : 'Se rellenará desde RENIEC'">
+
+                                   <p *ngIf="hasError('firstName')"
+                                        class="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ getErrorMessage('firstName') }}
+                                   </p>
+                              </div>
+
+                              <!-- Apellidos -->
+                              <div class="space-y-2">
+                                   <label
+                                        class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        <i class="text-gray-400 fas fa-user-tag"></i>
+                                        Apellidos
+                                        <span class="text-red-500">*</span>
+                                        <span *ngIf="isEditMode || clientForm.get('lastName')?.disabled"
+                                             class="px-2 py-1 ml-2 text-xs border rounded-md text-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
+                                             <i class="mr-1 fas fa-shield-alt"></i>
+                                             {{ isEditMode ? 'PROTEGIDO' : 'AUTO' }}
+                                        </span>
+                                   </label>
+                                   <input type="text" formControlName="lastName" [disabled]="isEditMode"
+                                        [class.border-red-300]="hasError('lastName')"
+                                        [class.focus:ring-red-500]="hasError('lastName')"
+                                        [class.border-green-300]="!hasError('lastName') && clientForm.get('lastName')?.valid && clientForm.get('lastName')?.value"
+                                        [class.focus:ring-green-500]="!hasError('lastName') && clientForm.get('lastName')?.valid && clientForm.get('lastName')?.value"
+                                        [class.bg-slate-50]="isEditMode || (clientForm.get('lastName')?.disabled || false)"
+                                        [class.dark:bg-slate-700\50]="isEditMode || (clientForm.get('lastName')?.disabled || false)"
+                                        [class.text-slate-600]="isEditMode || (clientForm.get('lastName')?.disabled || false)"
+                                        [class.dark:text-slate-300]="isEditMode || (clientForm.get('lastName')?.disabled || false)"
+                                        class="w-full px-4 py-3.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:cursor-not-allowed"
+                                        [placeholder]="isEditMode ? 'Campo protegido' : 'Se rellenará desde RENIEC'">
+
+                                   <p *ngIf="hasError('lastName')"
+                                        class="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ getErrorMessage('lastName') }}
+                                   </p>
+                              </div>
+                         </div>
+                    </div>
+
+                    <!-- Sección 2: Información de Contacto -->
+                    <div class="mb-12">
+                         <div class="flex items-center gap-3 mb-8">
+                              <div
+                                   class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-xl">
+                                   <i class="text-lg text-white fas fa-envelope"></i>
+                              </div>
+                              <div>
+                                   <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Información de
+                                        Contacto
+                                   </h2>
+                                   <p class="text-sm text-gray-600 dark:text-gray-400">Datos de comunicación</p>
+                              </div>
+                         </div>
+
+                         <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+                              <!-- Email -->
+                              <div class="space-y-2">
+                                   <label
+                                        class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        <i class="text-gray-400 fas fa-at"></i>
+                                        Correo Electrónico
+                                        <span class="text-red-500">*</span>
+                                   </label>
+                                   <input type="email" formControlName="email"
+                                        [class.border-red-300]="hasError('email')"
+                                        [class.focus:ring-red-500]="hasError('email')"
+                                        [class.border-green-300]="!hasError('email') && clientForm.get('email')?.valid && clientForm.get('email')?.value"
+                                        [class.focus:ring-green-500]="!hasError('email') && clientForm.get('email')?.valid && clientForm.get('email')?.value"
+                                        class="w-full px-4 py-3.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        placeholder="ejemplo@correo.com">
+                                   <p *ngIf="hasError('email')"
+                                        class="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ getErrorMessage('email') }}
+                                   </p>
+                              </div>
+
+                              <!-- Teléfono -->
+                              <div class="space-y-2">
+                                   <label
+                                        class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        <i class="text-gray-400 fas fa-phone"></i>
+                                        Teléfono
+                                        <span class="text-red-500">*</span>
+                                   </label>
+                                   <input type="tel" formControlName="phone" [class.border-red-300]="hasError('phone')"
+                                        [class.focus:ring-red-500]="hasError('phone')"
+                                        [class.border-green-300]="!hasError('phone') && clientForm.get('phone')?.valid && clientForm.get('phone')?.value"
+                                        [class.focus:ring-green-500]="!hasError('phone') && clientForm.get('phone')?.valid && clientForm.get('phone')?.value"
+                                        (input)="limitPhoneInput($event)" maxlength="9"
+                                        class="w-full px-4 py-3.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        placeholder="987654321">
+                                   <div *ngIf="!hasError('phone')"
+                                        class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>Debe empezar con 9 y tener 9 dígitos</span>
+                                   </div>
+                                   <p *ngIf="hasError('phone')"
+                                        class="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ getErrorMessage('phone') }}
+                                   </p>
+                              </div>
+                         </div>
+                    </div>
+
+                    <!-- Sección 3: Ubicación -->
+                    <div class="mb-12">
+                         <div class="flex items-center gap-3 mb-8">
+                              <div
+                                   class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl">
+                                   <i class="text-lg text-white fas fa-map-marker-alt"></i>
+                              </div>
+                              <div>
+                                   <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Información de
+                                        Ubicación
+                                   </h2>
+                                   <p class="text-sm text-gray-600 dark:text-gray-400">Dirección y ubicación específica
+                                   </p>
+                              </div>
+                         </div>
+
+                         <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                              <!-- Dirección -->
+                              <div class="space-y-2 lg:col-span-3">
+                                   <label
+                                        class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        <i class="text-gray-400 fas fa-map"></i>
+                                        Dirección Completa
+                                        <span class="text-red-500">*</span>
+                                   </label>
+                                   <input type="text" formControlName="streetAddress"
+                                        [class.border-red-300]="hasError('streetAddress')"
+                                        [class.focus:ring-red-500]="hasError('streetAddress')"
+                                        [class.border-green-300]="!hasError('streetAddress') && clientForm.get('streetAddress')?.valid && clientForm.get('streetAddress')?.value"
+                                        [class.focus:ring-green-500]="!hasError('streetAddress') && clientForm.get('streetAddress')?.valid && clientForm.get('streetAddress')?.value"
+                                        class="w-full px-4 py-3.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        placeholder="Jr. Los Álamos 123, Mz. A Lote 15">
+                                   <p *ngIf="hasError('streetAddress')"
+                                        class="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ getErrorMessage('streetAddress') }}
+                                   </p>
+                              </div>
+
+                              <!-- Zona -->
+                              <div class="space-y-2">
+                                   <label
+                                        class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        <i class="text-gray-400 fas fa-layer-group"></i>
+                                        Zona
+                                        <span class="text-red-500">*</span>
+                                   </label>
+                                   <select formControlName="zoneId" [class.border-red-300]="hasError('zoneId')"
+                                        [class.focus:ring-red-500]="hasError('zoneId')"
+                                        [class.border-green-300]="!hasError('zoneId') && clientForm.get('zoneId')?.valid && clientForm.get('zoneId')?.value"
+                                        [class.focus:ring-green-500]="!hasError('zoneId') && clientForm.get('zoneId')?.valid && clientForm.get('zoneId')?.value"
+                                        [disabled]="zones.length === 0"
+                                        class="w-full px-4 py-3.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <option value="">{{ zones.length === 0 ? 'Cargando zonas...' : 'Seleccionar
+                                             zona' }}
+                                        </option>
+                                        <option *ngFor="let zone of zones" [value]="zone.zoneId">{{ zone.zoneName }}
+                                        </option>
+                                   </select>
+                                   <p *ngIf="hasError('zoneId')"
+                                        class="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ getErrorMessage('zoneId') }}
+                                   </p>
+                              </div>
+
+                              <!-- Calle -->
+                              <div class="space-y-2">
+                                   <label
+                                        class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        <i class="text-gray-400 fas fa-road"></i>
+                                        Calle
+                                        <span class="text-red-500">*</span>
+                                   </label>
+                                   <select formControlName="streetId" [class.border-red-300]="hasError('streetId')"
+                                        [class.focus:ring-red-500]="hasError('streetId')"
+                                        [class.border-green-300]="!hasError('streetId') && clientForm.get('streetId')?.valid && clientForm.get('streetId')?.value"
+                                        [class.focus:ring-green-500]="!hasError('streetId') && clientForm.get('streetId')?.valid && clientForm.get('streetId')?.value"
+                                        [disabled]="!clientForm.get('zoneId')?.value || loadingStreets"
+                                        class="w-full px-4 py-3.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <option value="">{{ loadingStreets ? 'Cargando calles...' :
+                                             (!clientForm.get('zoneId')?.value ? 'Primero seleccione una zona' :
+                                             'Seleccionar calle') }}</option>
+                                        <option *ngFor="let street of filteredStreets" [value]="street.streetId">{{
+                                             street.streetName }}</option>
+                                   </select>
+                                   <p *ngIf="hasError('streetId')"
+                                        class="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ getErrorMessage('streetId') }}
+                                   </p>
+                              </div>
+                         </div>
+                    </div>
+
+               </div>
+
+               <!-- Botones de acción -->
+               <div class="px-8 py-6 border-t border-gray-200 bg-gray-50 dark:bg-gray-800/50 dark:border-gray-700">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:justify-end">
+                         <button type="button" (click)="onCancel()" [disabled]="isSaving"
+                              class="px-6 py-3.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                              <i class="mr-2 fas fa-times"></i>
+                              Cancelar
+                         </button>
+
+                         <button type="submit" [disabled]="clientForm.invalid || isSaving"
+                              class="px-8 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none flex items-center justify-center gap-2">
+                              <i *ngIf="!isSaving" class="fas fa-save"></i>
+                              <i *ngIf="isSaving" class="fas fa-spinner animate-spin"></i>
+                              {{ submitButtonText }}
+                         </button>
+                    </div>
+               </div>
+          </form>
+     </div>
+</div>

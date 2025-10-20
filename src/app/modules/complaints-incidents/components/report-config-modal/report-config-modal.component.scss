@@ -1,0 +1,35 @@
+/* Estilos específicos para el modal de configuración de reportes */
+.mat-form-field {
+  width: 100%;
+}
+
+.mat-checkbox {
+  margin-bottom: 8px;
+}
+
+.mat-checkbox .mat-checkbox-layout {
+  white-space: normal;
+}
+
+/* Estilos para el patrón de puntos del header */
+.bg-pattern-dots {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Sombra de texto personalizada */
+.text-shadow-lg {
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Animaciones para los botones */
+.transform.hover\:scale-105:hover {
+  transform: scale(1.05);
+}
+
+/* Estilos responsive para el grid */
+@media (max-width: 768px) {
+  .grid.md\:grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
