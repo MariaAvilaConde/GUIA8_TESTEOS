@@ -23,7 +23,7 @@
         <java.version>17</java.version>
         <start-class>pe.edu.vallegrande.ms_water_quality.VgMsWaterQuality</start-class>
 
-        <!-- 🔧 Configuración SonarCloud corregida -->
+        <!-- Configuración SonarCloud -->
         <sonar.projectKey>MariaAvilaConde_GUIA8_TESTEOS</sonar.projectKey>
         <sonar.organization>MariaAvila25</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -36,7 +36,6 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
 
-        <!-- WebClient for consuming external services -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webflux</artifactId>
@@ -175,7 +174,7 @@
                         </goals>
                         <configuration>
                             <excludes>
-                                <!-- Archivos NO testeables -->
+                                <!-- Archivos no testeables -->
                                 <exclude>**/config/**</exclude>
                                 <exclude>**/dto/**</exclude>
                                 <exclude>**/model/**</exclude>
