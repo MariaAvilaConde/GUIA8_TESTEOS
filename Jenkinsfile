@@ -2,45 +2,64 @@ pipeline {
     agent any
 
     environment {
-        // 🔐 Token configurado en Jenkins (Manage Jenkins → Credentials → Global credentials)
+        // 🔐 Token configurado en Jenkins (Manage Jenkins → Credentials → Secret Text)
         SONAR_TOKEN = credentials('SONAR_TOKEN')
 
-        // ✅ Claves correctas para SonarCloud
+        // 🔑 Configuración de tu organización y proyecto en SonarCloud
         SONAR_PROJECT_KEY = 'MariaAvilaConde_GUIA8_TESTEOS'
-        SONAR_ORG = 'MariaAvilaConde'
+        SONAR_ORG = 'MariaAvila25'
+        SONAR_HOST_URL = 'https://sonarcloud.io'
     }
 
     tools {
-        jdk 'jdk17'
-        maven 'Maven3'
+        jdk 'jdk17'          // Asegúrate de tener configurado en Jenkins un JDK con este nombre
+        maven 'Maven3'       // Igual para Maven (Manage Jenkins → Global Tool Configuration)
     }
 
     stages {
-        stage('Build') {
+
+        stage('Checkout') {
             steps {
-                echo '🚀 Compilando proyecto...'
-                sh 'mvn clean verify -DskipTests'
+                echo '📥 Descargando el código fuente...'
+                checkout scm
             }
         }
 
-        stage('SonarCloud Analysis') {
+        stage('Build') {
             steps {
-                withSonarQubeEnv('SonarCloud') {
-                    echo '🔍 Ejecutando análisis de SonarCloud...'
-                    sh '''
-                        mvn sonar:sonar \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                            -Dsonar.organization=${SONAR_ORG} \
-                            -Dsonar.host.url=https://sonarcloud.io \
-                            -Dsonar.login=${SONAR_TOKEN}
-                    '''
+                echo '🔧 Compilando el proyecto con Maven...'
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo '🧪 Ejecutando pruebas unitarias...'
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
                 }
+            }
+        }
+
+        stage('Code Analysis - SonarCloud') {
+            steps {
+                echo '🚀 Ejecutando análisis de código en SonarCloud...'
+                sh '''
+                    mvn verify sonar:sonar \
+                      -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                      -Dsonar.organization=${SONAR_ORG} \
+                      -Dsonar.host.url=${SONAR_HOST_URL} \
+                      -Dsonar.login=${SONAR_TOKEN}
+                '''
             }
         }
 
         stage('Package') {
             steps {
-                echo '📦 Empaquetando artefacto...'
+                echo '📦 Empaquetando la aplicación...'
                 sh 'mvn package -DskipTests'
             }
         }
@@ -48,10 +67,11 @@ pipeline {
 
     post {
         success {
-            echo '✅ Pipeline finalizado correctamente.'
+            echo '✅ Pipeline ejecutado exitosamente. Proyecto analizado en SonarCloud.'
+            echo "🔗 Revisa el reporte en: https://sonarcloud.io/project/overview?id=${SONAR_PROJECT_KEY}"
         }
         failure {
-            echo '❌ Build fallido. Revisa los logs de SonarCloud o Maven.'
+            echo '❌ Falló la ejecución del pipeline.'
         }
     }
 }
